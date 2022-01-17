@@ -25,10 +25,12 @@ Deck::Deck(int nDecks) {
 }
 
 void Deck::printDeck() const {
+	std::cout << "# ";
     for(const Card& card : m_deck) {
         card.printCard();
         std::cout << ' ';
     }
+	std::cout << '#';
 }
 
 void Deck::shuffleDeck() {

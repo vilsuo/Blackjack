@@ -3,11 +3,8 @@
 #include "deck.h"
 #include "settings.h"
 
-#include <algorithm>
+#include <cassert>
 #include <iostream>
-#include <iterator>
-#include <numeric>
-#include <vector>
 
 Player::Player(std::string name, int balance)
     : m_name{name},
@@ -15,14 +12,23 @@ Player::Player(std::string name, int balance)
       m_id{s_idGenerator++}
 {}
 
+Deck& Player::getCurrentHand() {
+	if (m_currentHand == static_cast<std::size_t>(0)) {
+		return m_hand[0];
+		
+	} else if (m_currentHand == static_cast<std::size_t>(1)) {
+		return m_hand[1];
+		
+	} else {
+		// handle error
+		assert(false && "invalid m_currentValue");
+	}
+}
+
 
 bool Player::addCard(const Card& card) {
-	// check if we need to create a new hand
-    if (m_handIndex >= m_hand.size()) {
-        m_hand.push_back(Deck{});
-    }
 	// add card in to the current hand
-    m_hand[m_handIndex].addCard(card);
+    Player::getCurrentHand().addCard(card);
 
 	// check if adding the card causes bust
     if (Player::bust()) {
@@ -39,58 +45,45 @@ bool Player::addCard(const Card& card) {
 
 bool Player::stand() {
 	// add current hand to finished hands
-    m_finishedHands.push_back(m_handIndex);
-
-	// check if there is no hands left to handle
-    if (m_indexStack.empty()) {
-        return false;
-    }
-
-	// point to next hand to handle
-    m_handIndex = m_indexStack.top();
-    m_indexStack.pop();
-    return true;
+    if (m_currentHand == static_cast<std::size_t>(0)) {
+		m_handIsFinished[0] = true;
+	
+		// no hands left
+		return false;
+		
+	} else if (m_currentHand == static_cast<std::size_t>(1)) {
+		m_handIsFinished[1] = true;
+		
+		// switch to first hand
+		m_currentHand = static_cast<std::size_t>(0);
+		return true;
+		
+	} else {
+		// handle error
+		assert(false && "invalid m_currentValue");
+	}
 }
 
 void Player::split() {
     // take the card from current hand
-    Card card { m_hand[m_handIndex].popLastCard() };
-
-    // add the card to a new hand
-    m_indexStack.push(m_handIndex);
-    m_handIndex = m_hand.size();
-
-    Player::addCard(card);
+	if (m_currentHand == static_cast<std::size_t>(0)) {
+		Card card { Player::getCurrentHand().popLastCard() };
+		
+		m_currentHand = static_cast<size_t>(1);
+		Player::getCurrentHand().addCard(card);
+	} else {
+		assert(false && "Player can only split after the initial deal");
+	}
 }
 
-bool Player::bust() const {
-    return m_hand[m_handIndex].getDeckTotalValue() > settings::bustValue;
+bool Player::bust() {
+    return Player::getCurrentHand().getDeckTotalValue() > settings::bustValue;
 }
 
 void Player::printHands() const {
-	for(hand_type::size_type i{0}; i < m_hand.size(); ++i) {
-		bool found{false};
-		for (const auto& finishedHand : m_finishedHands) {
-			if (finishedHand == i) {
-				found = true;
-				break;
-			}
-		}
-		if (found) continue;
-		
-        m_hand[i].printDeck();
-        std::cout << "# ";
-    }
-	
-    // print finished hands in reverse order
-    for(auto it{ m_finishedHands.rbegin() }; it != m_finishedHands.rend(); ++it) {
-		std::cout << "f:";
-		
-        m_hand[*it].printDeck();
-		std::cout << "# ";
-    }
-	
-    std::cout << '\n';
+	m_hand[0].printDeck();
+	m_hand[1].printDeck();
+	std::cout << '\n';
 }
 
 void Player::addToBalance(int amount) {

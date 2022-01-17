@@ -4,26 +4,21 @@
 #include "card.h"
 #include "deck.h"
 
-#include <stack>
+#include <array>
 #include <string>
-#include <vector>
 
 class Player {
-	public:
-        using hand_type = std::vector<Deck>;
-		
-    private:
+	private:
+		static inline int s_idGenerator{0};
+	
         std::string m_name{};
         int m_balance{0};
+		int m_id{};
 		
-		hand_type m_hand{};
+		std::array<Deck, 2> m_hand{};
+		std::array<bool, 2> m_handIsFinished{false, false};
+        std::size_t m_currentHand{0};					// index of the current hand
 
-        std::stack<hand_type::size_type> m_indexStack{};
-        std::vector<hand_type::size_type> m_finishedHands{};	// implement as bit vector!!
-        hand_type::size_type m_handIndex{0};					// index of the current hand
-
-        static inline int s_idGenerator{0};
-        int m_id{};
 
     public:
         Player(std::string name, int balance);
@@ -31,6 +26,7 @@ class Player {
         int getId() const { return m_id; }
         std::string getName() const { return m_name; };
         int getBalance() const { return m_balance; };
+		Deck& getCurrentHand();
 		
 		
 		bool addCard(const Card&); // return false if adding card causes the end of players turn
@@ -39,7 +35,7 @@ class Player {
 
         void split();
 
-        bool bust() const;
+        bool bust(); 	// true if deck total value is over settings::bustValue
 
         void printHands() const;
 		

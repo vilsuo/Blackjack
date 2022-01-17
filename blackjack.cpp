@@ -25,8 +25,10 @@ make simple member functions inline?
 int main() {
     Deck deck{4};
     Player p{"ville", 100};
+	p.printHands();
 
     while (true) {
+
         std::cout << "adding a card...\n";
         if(!p.addCard( deck.popLastCard() )) {
 			std::cout << "card added\n";

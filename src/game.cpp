@@ -63,19 +63,25 @@ void Game::run() {
     }
 }
 
-void Game::play() {							// CHECK IF CAN POP!!!
-    // deal first round...
+void Game::play() {			
+	std::cout << "Entering game\n";
+	// ask bet
+	
+	// CHECK IF CAN POP!!!
+    // deal initial round
     m_house.addCard(m_deck.popLastCard());
     for (Player& player : m_players) {
         player.addCard(m_deck.popLastCard());
     }
+	for (Player& player : m_players) {
+        player.addCard(m_deck.popLastCard());
+    }
     
-    // deal players one by one
+    // ask players one by one for action
     // results
     // pay
     // remove all cards from players
-
-    std::cout << "Entering game...\nReturning from game\n";
+    std::cout << "Returning from game\n";
 }
 
 void Game::createNewPlayer() {
