@@ -1,25 +1,17 @@
 #include "card.h"
 #include "player.h"
-#include "game.h"
 
 #include <iostream>
 
-/*
+/**
 TODO
-- Game
-	- check if can pop a card
-- Player
-	- m_finishedHands
-		- implement as a bit vector
-	- can only split/double down after initial deal?
-- Deck
-	- getDeckTotalValue
-		- do not check here if over settings::bustValue,
-		  check in Player class instead?
-- settings
-	- add amount of decks
+	- REDO
+		- Player class 
+			- implement multiple splits
+			- class contains too much game functionality?
 	
-make simple member functions inline?
+		- Game class
+			- move functionality from player class?
 */
 
 int main() {

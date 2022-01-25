@@ -6,67 +6,69 @@
 Card::Card(CardRank rank, CardSuit suit) : m_rank{rank}, m_suit{suit}
 {}
 
-void Card::printCard() const {
-    switch (m_rank) {
+std::ostream& operator<< (std::ostream& out, const Card& card) {
+	switch (card.m_rank) {
     case CardRank::rank_2:
-        std::cout << '2';
+        out << '2';
         break;
     case CardRank::rank_3:
-        std::cout << '3';
+        out << '3';
         break;
     case CardRank::rank_4:
-        std::cout << '4';
+        out << '4';
         break;
     case CardRank::rank_5:
-        std::cout << '5';
+        out << '5';
         break;
     case CardRank::rank_6:
-        std::cout << '6';
+        out << '6';
         break;
     case CardRank::rank_7:
-        std::cout << '7';
+        out << '7';
         break;
     case CardRank::rank_8:
-        std::cout << '8';
+        out << '8';
         break;
     case CardRank::rank_9:
-        std::cout << '9';
+        out << '9';
         break;
     case CardRank::rank_10:
-        std::cout << 'T';
+        out << 'T';
         break;
     case CardRank::rank_jack:
-        std::cout << 'J';
+        out << 'J';
         break;
     case CardRank::rank_queen:
-        std::cout << 'Q';
+        out << 'Q';
         break;
     case CardRank::rank_king:
-        std::cout << 'K';
+        out << 'K';
         break;
     case CardRank::rank_ace:
-        std::cout << 'A';
+        out << 'A';
         break;
     default:
         assert(false && "Unknown CardRank");
     }
 
-    switch (m_suit) {
+    switch (card.m_suit) {
     case CardSuit::suit_clubs:
-        std::cout << 'C';
+        out << 'C';
         break;
     case CardSuit::suit_diamonds:
-        std::cout << 'D';
+        out << 'D';
         break;
     case CardSuit::suit_hearts:
-        std::cout << 'H';
+        out << 'H';
         break;
     case CardSuit::suit_spades:
-        std::cout << 'S';
+        out << 'S';
         break;
     default:
         assert(false && "Unknown CardSuit");
     }
+
+    return out;
 }
 
 int Card::getCardValue() const {
@@ -83,7 +85,7 @@ int Card::getCardValue() const {
         case CardRank::rank_jack:     return 10;
         case CardRank::rank_queen:    return 10;
         case CardRank::rank_king:     return 10;
-        case CardRank::rank_ace:      return 11;	// value 1 implemented in Deck::getDeckTotalValue()
+        case CardRank::rank_ace:      return 11;
         default:
             assert(false && "No value for this CardRank");
             return 0;

@@ -1,8 +1,14 @@
 #include "settings.h"
 
 namespace settings {
+	extern const int nInitialDecks{4};
+	
 	extern const int bustValue{21};
+	extern const int houseHitIfLessThan{17};
+	
 	extern const bool splitOnSameRank{true};
     extern const bool canSurrender{true};
-	extern const int nInitialDecks{4};
+	extern const bool canDoubleDownAfterASplit{true};
+
+	extern const int maxSplits{3};
 }

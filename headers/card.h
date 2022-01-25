@@ -1,6 +1,8 @@
 #ifndef CARD_H
 #define CARD_H
 
+#include <iostream>
+
 enum class CardRank {
     rank_2,
     rank_3,
@@ -35,8 +37,15 @@ class Card {
 
     public:
         Card(CardRank rank, CardSuit suit);
-
-        void printCard() const;
+		
+		friend std::ostream& operator<< (std::ostream&, const Card&);
+		
+		/**
+			CardRank::rank_ace has value 11:
+			
+			Value 1 for CardRank::rank_ace is implemented
+			in Deck::getDeckTotalValue()
+		*/
         int getCardValue() const;
         bool isSameRank(const Card&) const;
         bool isSameValue(const Card&) const;

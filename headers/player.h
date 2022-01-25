@@ -17,8 +17,9 @@ class Player {
 		
 		std::array<Deck, 2> m_hand{};
 		std::array<bool, 2> m_handIsFinished{false, false};
-        std::size_t m_currentHand{0};					// index of the current hand
-
+        std::size_t m_currentHandIndex{0};					// index of the current hand
+		
+		std::array<int, 2> m_currentBets{0,0};
 
     public:
         Player(std::string name, int balance);
@@ -26,24 +27,32 @@ class Player {
         int getId() const { return m_id; }
         std::string getName() const { return m_name; };
         int getBalance() const { return m_balance; };
+		void setBalance(int amount) { m_balance += amount; };
 		Deck& getCurrentHand();
+		int& getCurrentBet();
 		
+		bool addCard(const Card&); 	// false if adding card causes the end of players turn
 		
-		bool addCard(const Card&); // return false if adding card causes the end of players turn
 
-        bool stand();   // true if still has hands
+        bool stand();   			// true if still has other hand left
 
         void split();
-
-        bool bust(); 	// true if deck total value is over settings::bustValue
-
-        void printHands() const;
 		
-        
-        void addToBalance(int amount);
-        bool bet(int mount);            // if there is enough balance
+		/**
+			does NOT add a card
+		*/
+		bool doubleDown(); 			// true if still has other hand left
+									// todo
+		void surrender();
+
+        bool bust(); 				// true if deck total value is over settings::bustValue
+		
+        bool bet(int mount);            // true if there is enough balance
 
         void printInfo() const;
+		void printHands() const;
+		
+		void reset();
 };
 
 #endif

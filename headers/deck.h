@@ -3,6 +3,7 @@
 
 #include "card.h"
 
+#include <iostream>
 #include <vector>
 
 class Deck {
@@ -13,17 +14,23 @@ class Deck {
         deck_type m_deck{};
 
     public:
+		/**
+			Creates a card deck with nDecks complete decks,
+			also shuffles the deck
+		*/
         Deck(int nDecks = 0);
-
-        void printDeck() const;
-        void shuffleDeck();
-        int getNumberOfCardsInADeck() const;
 		
-		/*
-		If deck contains aces:
+		const Card& operator[] (int index) const;
+		friend std::ostream& operator<< (std::ostream&, const Deck&);
+		
+        void shuffleDeck();
+        int getNumberOfCardsInADeck() const { return m_deck.size(); };
+		
+		/**
+			If deck contains aces:
 			- treat aces as a value 1 until the total value of deck
 			  is less than or equal to settings::bustValue
-			- else treat aces as a value 11
+			- else treat aces as a value specified by Card::getCardValue()
 		*/
         int getDeckTotalValue() const;
 
