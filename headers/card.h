@@ -47,8 +47,8 @@ class Card {
 			in Deck::getDeckTotalValue()
 		*/
         int getCardValue() const;
-        bool isSameRank(const Card&) const;
-        bool isSameValue(const Card&) const;
+        bool isSameRank(const Card& card) const { return m_rank == card.m_rank; };
+        bool isSameValue(const Card& card) const { return getCardValue() == card.getCardValue(); };
 };
 
 #endif

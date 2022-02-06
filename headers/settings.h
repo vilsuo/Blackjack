@@ -7,18 +7,13 @@
 namespace settings {
 	extern const int nInitialDecks;
 	
-	extern const int bustValue;
+	extern const int blackjackValue;
 	extern const int houseHitIfLessThan;
 	
 	extern const bool splitOnSameRank;
     extern const bool canSurrender;
-	
-	
-	
-	// not implemented
 	extern const bool canDoubleDownAfterASplit;
 
-	// not implemented
 	extern const int maxSplits;
 }
 

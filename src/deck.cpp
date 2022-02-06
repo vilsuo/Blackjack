@@ -10,15 +10,14 @@
 #include <random>       // for std::mt19937
 
 Deck::Deck(int nDecks) {
-	constexpr auto nSuits{static_cast<deck_type::size_type>(CardSuit::max_suits)};
-	constexpr auto nRanks{static_cast<deck_type::size_type>(CardRank::max_ranks)};
-	m_deck.reserve(nSuits * nRanks * static_cast<deck_type::size_type>(nDecks));																// this ok?
+	constexpr auto nSuits{static_cast<deck_type::size_type>( CardSuit::max_suits )};
+	constexpr auto nRanks{static_cast<deck_type::size_type>( CardRank::max_ranks )};
+	m_deck.reserve(nSuits * nRanks * static_cast<deck_type::size_type>( nDecks ));																// this ok?
 
-	int amount{0};
-    while (amount < nDecks) {
-        for (auto suit{ static_cast<deck_type::size_type>(0) }; suit < nSuits; ++suit) {
-            for (auto rank{ static_cast<deck_type::size_type>(0) }; rank < nRanks; ++rank) {
-                m_deck.emplace_back( static_cast<CardRank>(rank), static_cast<CardSuit>(suit) );			// push_back instead?
+	for (int amount{0}; amount < nDecks; ++amount) {
+        for (auto suit{ static_cast<deck_type::size_type>( 0 ) }; suit < nSuits; ++suit) {
+            for (auto rank{ static_cast<deck_type::size_type>( 0 ) }; rank < nRanks; ++rank) {
+                m_deck.emplace_back( static_cast<CardRank>( rank ), static_cast<CardSuit>( suit ) );		// push_back instead?
             }
         }
         ++amount;
@@ -26,30 +25,26 @@ Deck::Deck(int nDecks) {
     shuffleDeck();
 }
 
-const Card& Deck::operator[] (int index) const {
-	assert(index >= 0 && static_cast<deck_type::size_type>(index) < m_deck.size() && "Trying to access deck out of bounds");
+const Card& Deck::operator[] (deck_type::size_type index) const {
+	assert(index < m_deck.size() && "Trying to access deck out of bounds");
 	
-	return m_deck[static_cast<deck_type::size_type>(index)];
+	return m_deck[index];
 }
 
 std::ostream& operator<< (std::ostream& out, const Deck& deck) {
-	out << "# ";
-    for(const Card& card : deck.m_deck) {
+	std::for_each(deck.m_deck.cbegin(), --deck.m_deck.cend(), [&out](const auto& card) {
 		out << card << ' ';
-	}
-	std::cout << '#';
-	
+	});
+	out << deck.m_deck.back();
 	return out;
 }
 
 void Deck::shuffleDeck() {
-    static std::mt19937 mt{ static_cast<std::mt19937::result_type>(std::time(nullptr)) };
-
-    std::shuffle(std::begin(m_deck), std::end(m_deck), mt);
+    static std::mt19937 mt{ static_cast<std::mt19937::result_type>( std::time(nullptr) ) };
+	std::shuffle(std::begin(m_deck), std::end(m_deck), mt);
 }
 
 int Deck::getDeckTotalValue() const {
-	// for reference later
 	const Card ace{ CardRank::rank_ace, CardSuit::suit_spades };
 	const int aceValue{ ace.getCardValue() };
 	  
@@ -57,28 +52,25 @@ int Deck::getDeckTotalValue() const {
 	int nAces{0};
     for (const Card& card : m_deck) {
         totalValue += card.getCardValue();
-		if (card.isSameRank(ace)) {
-			++nAces;
-		}
+		if (card.isSameRank(ace)) ++nAces;
     }
+	if (totalValue <= settings::blackjackValue || aceValue == 1) return totalValue;
 	
 	/**
-		If total value of cards is over settings::bustValue,
-		treat aces as 1 until total value is less than on equal to bustValue
+		calculate how many aces to treat as one
+		
+		If total value of cards is over settings::blackjackValue,
+		treat aces as 1 until total value is less than on equal to settings::blackjackValue
 	*/
-	while (nAces && (totalValue > settings::bustValue)) {
-		totalValue -= (aceValue - 1);
-		--nAces;
-	}
+	int nAcesToTreatAsOne{0};
 	
-    return totalValue;
+	nAcesToTreatAsOne = (totalValue - settings::blackjackValue) / (aceValue - 1);
+	if ((totalValue - settings::blackjackValue) % (aceValue - 1) != 0) ++nAcesToTreatAsOne;	// round up
+	
+	return totalValue - (aceValue - 1) * std::min(nAces, nAcesToTreatAsOne);
 }
 
-void Deck::addCard(const Card& card) {															// move?
-    m_deck.push_back(card);
-}
-
-Card Deck::popLastCard() {																		// move?
+Card Deck::popLastCard() {
 	assert(!m_deck.empty() && "Trying to pop from an empty deck");
 	
     Card card{ m_deck.back() };
@@ -86,7 +78,6 @@ Card Deck::popLastCard() {																		// move?
     return card;
 }
 
-
-void Deck::removeAllCards() {
-    m_deck.clear();
+bool Deck::isBlackjack() const {
+	return (getDeckTotalValue() == settings::blackjackValue && getNumberOfCardsInADeck() == 2);
 }

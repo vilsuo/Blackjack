@@ -71,6 +71,7 @@ std::ostream& operator<< (std::ostream& out, const Card& card) {
     return out;
 }
 
+// needs to return positive values
 int Card::getCardValue() const {
     switch (m_rank) {
         case CardRank::rank_2:        return 2;
@@ -90,12 +91,4 @@ int Card::getCardValue() const {
             assert(false && "No value for this CardRank");
             return 0;
     }
-}
-
-bool Card::isSameRank(const Card& card) const {
-    return m_rank == card.m_rank;
-}
-
-bool Card::isSameValue(const Card& card) const {
-    return (getCardValue() == card.getCardValue());
 }

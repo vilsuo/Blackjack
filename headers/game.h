@@ -12,32 +12,34 @@ class Game {
         std::vector<Player> m_players{};
         Deck m_deck{settings::nInitialDecks};
         Deck m_house{};
-		
-		bool m_isInitialAction{true};
 
     public:
+		Game();
         void run();
 
     private:
         void play();
 		
-		void askBet(Player&);
-		int askAction(const Player&) const;
-		bool handleAction(Player&, int);	// return true if player has turns left after this action
-											// need to check that action is allowed before this method
+		void askBets();
 		
-		bool canDoubleDown(const Player&) const;	// todo
-		bool canSplit(const Player&) const;
-		bool canSurrender(const Player&) const;
+		void dealInitialRound();
+		void dealFinalRound();
 		
-		Card deckPopCard();
+		int askAction(const Player& player, const bool isInitialAction) const;
+		
+		// return true if player has unfinished hands left after handled action
+		bool handleAction(Player& player, int action);
+		
+		Card deckPopLastCard();
+		
+		void reset();
 		
 		std::vector<Player>::iterator findPlayer(int id);
-		
         void createNewPlayer();
-        void deletePlayer();
+        void deletePlayer();												// expensive
         void printPlayers() const;
         void addBalance();
+		void showSettings() const;
 };
 
 #endif

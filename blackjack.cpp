@@ -1,46 +1,36 @@
-#include "card.h"
-#include "player.h"
+#include "game.h"
 
+#include <cassert>
 #include <iostream>
 
-/**
+/*
 TODO
-	- REDO
-		- Player class 
-			- implement multiple splits
-			- class contains too much game functionality?
+	IMPORTANT
+	- what amounts can the player bet?
+		
+	- input checking
 	
-		- Game class
-			- move functionality from player class?
+	- automatically stand when deck total value == settings::blackjackValue
+	
+	- move semantics
+		
+	LESS IMPORTANT	
+	- implement a hint function (A*?)
+	  - A*?
+	  - counts cards?
+	
+	- read player info from data base (SQL)
+	  - id/name/balance/current
+	  - history
+	 	- win/loss amount
+		- player hand value/house hand value
+		- time
+
 */
 
 int main() {
-    Deck deck{4};
-    Player p{"ville", 100};
-	p.printHands();
+    Game game{};
+	game.run();
 
-    while (true) {
-
-        std::cout << "adding a card...\n";
-        if(!p.addCard( deck.popLastCard() )) {
-			std::cout << "card added\n";
-			p.printHands();
-			std::cout << "Game over!\n";
-			break;
-		}
-        p.printHands();
-        std::cout << "card added\n";
-
-        int val{0};
-        std::cout << "enter 1 to split: ";
-        std::cin >> val;
-
-        if (val == 1) {
-            p.split();
-        }
-		std::cout << '\n';
-		
-    }
-	
     return 0;
 }
