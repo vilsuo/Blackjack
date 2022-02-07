@@ -4,10 +4,10 @@
 
 #include <algorithm>
 #include <cassert>
-#include <ctime>        // for std::time
+#include <ctime>
 #include <iostream>
 #include <iterator>
-#include <random>       // for std::mt19937
+#include <random>
 
 Deck::Deck(int nDecks) {
 	constexpr auto nSuits{static_cast<deck_type::size_type>( CardSuit::max_suits )};
@@ -17,7 +17,7 @@ Deck::Deck(int nDecks) {
 	for (int amount{0}; amount < nDecks; ++amount) {
         for (auto suit{ static_cast<deck_type::size_type>( 0 ) }; suit < nSuits; ++suit) {
             for (auto rank{ static_cast<deck_type::size_type>( 0 ) }; rank < nRanks; ++rank) {
-                m_deck.emplace_back( static_cast<CardRank>( rank ), static_cast<CardSuit>( suit ) );		// push_back instead?
+                m_deck.emplace_back( static_cast<CardRank>( rank ), static_cast<CardSuit>( suit ) );
             }
         }
         ++amount;
@@ -27,7 +27,6 @@ Deck::Deck(int nDecks) {
 
 const Card& Deck::operator[] (deck_type::size_type index) const {
 	assert(index < m_deck.size() && "Trying to access deck out of bounds");
-	
 	return m_deck[index];
 }
 
@@ -52,27 +51,21 @@ int Deck::getDeckTotalValue() const {
 	int nAces{0};
     for (const Card& card : m_deck) {
         totalValue += card.getCardValue();
-		if (card.isSameRank(ace)) ++nAces;
+		if ( card.isSameRank(ace) ) ++nAces;
     }
 	if (totalValue <= settings::blackjackValue || aceValue == 1) return totalValue;
 	
-	/**
-		calculate how many aces to treat as one
-		
-		If total value of cards is over settings::blackjackValue,
-		treat aces as 1 until total value is less than on equal to settings::blackjackValue
-	*/
+	// Calculate how many aces to treat as one.
 	int nAcesToTreatAsOne{0};
-	
 	nAcesToTreatAsOne = (totalValue - settings::blackjackValue) / (aceValue - 1);
-	if ((totalValue - settings::blackjackValue) % (aceValue - 1) != 0) ++nAcesToTreatAsOne;	// round up
+	// round up if needed
+	if ((totalValue - settings::blackjackValue) % (aceValue - 1) != 0) ++nAcesToTreatAsOne;
 	
 	return totalValue - (aceValue - 1) * std::min(nAces, nAcesToTreatAsOne);
 }
 
 Card Deck::popLastCard() {
 	assert(!m_deck.empty() && "Trying to pop from an empty deck");
-	
     Card card{ m_deck.back() };
     m_deck.pop_back();
     return card;

@@ -23,11 +23,14 @@ class Game {
 		void askBets();
 		
 		void dealInitialRound();
+		
+		// Deals the round after initial round.
+		// Also checks if player turn ends after initial round
 		void dealFinalRound();
 		
 		int askAction(const Player& player, const bool isInitialAction) const;
 		
-		// return true if player has unfinished hands left after handled action
+		// @return true if player has unfinished hands left after handling @param action
 		bool handleAction(Player& player, int action);
 		
 		Card deckPopLastCard();
@@ -38,7 +41,7 @@ class Game {
         void createNewPlayer();
         void deletePlayer();												// expensive
         void printPlayers() const;
-        void addBalance();
+		void addBalance();
 		void showSettings() const;
 };
 

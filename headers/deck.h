@@ -14,7 +14,8 @@ class Deck {
         deck_type m_deck{};
 
     public:
-		// Creates a card deck with nDecks complete decks, cards are in random order
+		// Creates a deck of Cards with nDecks complete sets of cards.
+		// Cards are in random order.
         Deck(int nDecks = 0);
 		
 		const Card& operator[] (deck_type::size_type index) const;
@@ -23,11 +24,8 @@ class Deck {
         void shuffleDeck();
         int getNumberOfCardsInADeck() const { return m_deck.size(); };
 		
-		/**
-			If deck contains aces:
-			- treat aces as a value 1 until the total value of deck
-			  is less than or equal to settings::blackjackValue
-		*/
+		// CardRank::rank_ace is treated as value 1 until the total value
+		// of cards is less than or equal to settings::blackjackValue.
         int getDeckTotalValue() const;
 
         void addCard(const Card& card) { m_deck.push_back(card); };

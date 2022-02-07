@@ -12,13 +12,11 @@
 #include <vector>
 
 Game::Game() {
-	/*
 	m_players.emplace_back("ville", 200);
 	m_players.emplace_back("antti", 200);
 	m_players.emplace_back("mikko", 200);
 	m_players.emplace_back("jukka", 200);
 	m_players.emplace_back("sari", 200);
-	*/
 }
 
 void Game::run() {
@@ -116,7 +114,7 @@ void Game::play() {
 	
 	const bool houseHasBlackJack{ m_house.isBlackjack() };
 	const bool houseBust{ m_house.getDeckTotalValue() > settings::blackjackValue };
-	if (houseHasBlackJack) 	std::cout << "House got blackjack!\n";
+	if (houseHasBlackJack) 	std::cout << "House has blackjack!\n";
 	if (houseBust) 			std::cout << "House busts!\n";
 	
     // display results & pay to player if needed
@@ -158,18 +156,9 @@ void Game::dealInitialRound() {
 	m_house.addCard( Game::deckPopLastCard() );
 	for (auto& player : m_players) {
 		for (int nCards{0}; nCards < nInitialCards; ++nCards) {
-			
-			/*
-			// first card is ace, second is random
-			if (nCards == 0) {
-				player.addCardToCurrentHand( {CardRank::rank_ace, CardSuit::suit_spades} );
-			} else {
-				player.addCardToCurrentHand( {CardRank::rank_ace, CardSuit::suit_clubs} );
-				//player.addCardToCurrentHand( Game::deckPopLastCard() );
-			}
-			*/
 			player.addCardToCurrentHand( Game::deckPopLastCard() );
 		}
+		
 	}
 }
 
@@ -190,10 +179,7 @@ void Game::dealFinalRound() {
 			
 			// check if player is already finished (bust or blackjack) after the initial deal
 			if (isInitialAction) {
-				if ( player.isCurrentHandBusted() ) 	std::cout << "Bust!\n";
-				if ( player.isCurrentHandBlackjack() ) 	std::cout << "Blackjack!\n";
-				
-				if ( player.isCurrentHandBusted() || player.isCurrentHandBlackjack() ) {
+				if ( player.autoStandCurrentHand() ) {
 					player.standCurrentHand();
 					if (iPlayer < m_players.size() ) std::cout << "\nMoving to next player\n";
 					break;	// player only has one hand at this time
@@ -251,38 +237,26 @@ bool Game::handleAction(Player& player, int action) {
 		case 0: // stand
 			std::cout << "Standing\n";
 			player.standCurrentHand();
-			
 			return player.tryToMoveToNextHand();
 			
 		case 1: // hit
 			std::cout << "Hitting\n";
 			player.addCardToCurrentHand( Game::deckPopLastCard() );
 			
-			if ( player.isCurrentHandBusted() ) 	std::cout << "Bust!\n";
-			if ( player.isCurrentHandBlackjack() ) 	std::cout << "Blackjack!\n";
-			
-			if ( player.isCurrentHandBusted() || player.isCurrentHandBlackjack() ) {
+			if ( player.autoStandCurrentHand() ) {
 				player.standCurrentHand();
 				return player.tryToMoveToNextHand();
 			}
 			return true;
 			
 		case 2: // surrender
-			std::cout << "Surrendering\n";
 			player.surrender();
 			return false; // only allowed as an initial action, ends players turn
 			
 		case 3: // double down
-			std::cout << "Doubling down\n";
-			player.doubleDownCurrentHand( Game::deckPopLastCard() );
-			
-			if ( player.isCurrentHandBusted() ) 		std::cout << "Bust!\n";
-			if ( player.isCurrentHandBlackjack() ) 	std::cout << "Blackjack!\n";
-			
-			return player.tryToMoveToNextHand();
+			return player.doubleDownCurrentHand( Game::deckPopLastCard() );
 		
 		case 4: { // split
-			std::cout << "Splitting\n";
 			const Card firstCard = Game::deckPopLastCard();
 			const Card secondCard = Game::deckPopLastCard();
 			return player.splitCurrentHand(firstCard, secondCard);

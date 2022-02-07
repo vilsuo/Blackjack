@@ -40,12 +40,6 @@ class Card {
 		
 		friend std::ostream& operator<< (std::ostream&, const Card&);
 		
-		/**
-			CardRank::rank_ace has value 11:
-			
-			Value 1 for CardRank::rank_ace is implemented
-			in Deck::getDeckTotalValue()
-		*/
         int getCardValue() const;
         bool isSameRank(const Card& card) const { return m_rank == card.m_rank; };
         bool isSameValue(const Card& card) const { return getCardValue() == card.getCardValue(); };

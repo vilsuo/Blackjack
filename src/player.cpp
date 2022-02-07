@@ -38,79 +38,62 @@ void Player::addCardToCurrentHand(const Card& card) {
 }
 
 void Player::standCurrentHand() {
-	// mark current hand as finished
 	m_finishedHands.push_back(m_currentHandIndex);
 }
 
 bool Player::splitCurrentHand(const Card& firstCardToAdd, const Card& secondCardToAdd) {
-	assert(Player::getCurrentHandRef().getNumberOfCardsInADeck() == 2 
-		&& "Trying to split but the player does not have two cards int the current hand");
-		
-	assert(Player::getCurrentBet() <= m_balance && "Trying to split but the player can not afford");
+	std::cout << "Splitting\n";
+	int bet{ getCurrentBet() };
+	const Card card = getCurrentHandRef().popLastCard();	// pop the second card from the current hand
 	
-	int bet{ Player::getCurrentBet() };
-	const Card card = Player::getCurrentHandRef().popLastCard();	// pop the second card from the curren hand
+	Player::addCardToCurrentHand(secondCardToAdd);			// add a new card to current hand
 	
-	Player::addCardToCurrentHand(secondCardToAdd);					// add a new card to current hand
+	if ( autoStandCurrentHand() ) standCurrentHand();		// if player finishes the hand do not remember it
+	else m_handStack.push(m_currentHandIndex);
 	
-	bool finishedFirstHand{false};
-	if ( Player::isCurrentHandBusted() ) 	std::cout << "Bust 1!\n";
-	if ( Player::isCurrentHandBlackjack() ) std::cout << "Blackjack 1!\n";
-	if ( Player::isCurrentHandBlackjack() || Player::isCurrentHandBusted() ) {
-		Player::standCurrentHand();
-		finishedFirstHand = true;
+	m_hands.push_back( Deck{} );							// create a new empty hand
+	m_currentHandIndex = m_hands.size() - 1;				// move to the new empty hand
+	addCardToCurrentHand(card);								// add the popped card to the new hand
+	addCardToCurrentHand(firstCardToAdd);					// add a new card to new hand
+	
+	setCurrentBet(bet);										// copy the previous bet to the new hand
+	setBalance(m_balance - bet);							// update the player balance
+	
+	if ( autoStandCurrentHand() ) {							// if new hand is finished
+		standCurrentHand();
+		return tryToMoveToNextHand();
+	} else {												// else stay in the new hand
+		return true;
 	}
-	
-	m_hands.push_back( Deck{} );									// create a new empty hand
-	if (!finishedFirstHand) m_handStack.push(m_currentHandIndex); 	// remember the last hand?
-	m_currentHandIndex = m_hands.size() - 1;						// move to the new empty hand
-	Player::addCardToCurrentHand(card);								// add the popped card to the new hand
-	Player::addCardToCurrentHand(firstCardToAdd);					// add a new card to new hand
-	
-	Player::setCurrentBet(bet);										// copy the previous bet to the new hand
-	Player::setBalance(m_balance - bet);							// update the player balance
-	
-	bool finishedSecondHand{false};
-	if ( Player::isCurrentHandBusted() ) 	std::cout << "Bust 2!\n";
-	if ( Player::isCurrentHandBlackjack() ) std::cout << "Blackjack 2!\n";
-	if ( Player::isCurrentHandBlackjack() || Player::isCurrentHandBusted() ) {
-		Player::standCurrentHand();
-		finishedSecondHand = true;
-	}
-		
-	if (finishedFirstHand && finishedSecondHand) {
-		return Player::tryToMoveToNextHand();
-	} else if (!finishedFirstHand && finishedSecondHand) {
-		return Player::tryToMoveToNextHand();
-	}
-	return true;
 }
 
-void Player::doubleDownCurrentHand(const Card& cardToAdd) {
-	const int bet{ Player::getCurrentBet() };
+bool Player::doubleDownCurrentHand(const Card& cardToAdd) {
+	std::cout << "Doubling down\n";
 	
+	const int bet{ getCurrentBet() };
 	assert(bet <= m_balance && "Trying to double down but the player can not afford");
 	
-	Player::setCurrentBet(2 * bet);				// double the current bet
-	Player::setBalance(m_balance - bet);		// update the player balance
-	Player::addCardToCurrentHand(cardToAdd);
+	setCurrentBet(2 * bet);				// double the current bet
+	setBalance(m_balance - bet);		// update the player balance
+	addCardToCurrentHand(cardToAdd);
 	
-	Player::standCurrentHand();
+	autoStandCurrentHand();				// used here just for printing
+	
+	standCurrentHand();
+	return tryToMoveToNextHand();
 }
 
 void Player::surrender() {
+	std::cout << "Surrendering\n";
 	const int bet{ Player::getCurrentBet() };
-	Player::setBalance(m_balance + bet / 2);	// get half of the bet back instantly
-	Player::setCurrentBet(0);
-	
-	Player::standCurrentHand();
+	setBalance(m_balance + bet / 2);	// get half of the bet back instantly
+	setCurrentBet(0);
+	standCurrentHand();
 }
 
 bool Player::canDoubleDownCurrentHand() const {
 	// is doubling down allowed after splitting
-	if (!settings::canDoubleDownAfterASplit && getNHands() > 1) {
-		return false;
-	}
+	if (!settings::canDoubleDownAfterASplit && m_hands.size() > 1) return false;
 	
 	// can player afford?
 	return getBalance() >= getCurrentBet();
@@ -118,7 +101,7 @@ bool Player::canDoubleDownCurrentHand() const {
 		
 bool Player::canSplitCurrentHand() const {
 	// has player reached the maximum number of allowed splits?
-	if (getNHands() > settings::maxSplits + 1) return false;
+	if (m_hands.size() > static_cast<hands_type::size_type>( settings::maxSplits + 1) ) return false;
 	
 	// can player afford?
 	if (getBalance() < getCurrentBet()) return false;
@@ -139,12 +122,26 @@ bool Player::canSplitCurrentHand() const {
 }
 
 bool Player::isCurrentHandBusted() const {
-    return Player::getCurrentHandRef().getDeckTotalValue() > settings::blackjackValue;
+    return getCurrentHandRef().getDeckTotalValue() > settings::blackjackValue;
 }
 
 bool Player::isCurrentHandBlackjack() const {
 	const Deck& currentHand{ getCurrentHandRef() };
 	return currentHand.isBlackjack();
+}
+
+bool Player::autoStandCurrentHand() const {
+	const bool bust{ isCurrentHandBusted() };
+	const bool blackjack{ isCurrentHandBlackjack() };
+	const bool isBestValue{ getCurrentHandRef().getDeckTotalValue() == settings::blackjackValue };
+	
+	if (bust || blackjack || isBestValue) {
+		if (bust) 				std::cout << "Bust!\n";
+		if (blackjack) 			std::cout << "Blackjack!\n";
+		else if (isBestValue) 	std::cout << "Reached the best value\n";
+		return true;
+	}
+	return false;
 }
 
 void Player::printInfo() const {
@@ -160,11 +157,8 @@ void Player::printHands() const {
 			
 			// this hand is finished?
 			auto found{
-				std::find_if(m_finishedHands.begin(), m_finishedHands.end(), [i](hands_type::size_type finishedHand) {
-						return i == finishedHand;
-					}
-				)
-			};
+				std::find_if(m_finishedHands.begin(), m_finishedHands.end(),
+							[i](hands_type::size_type finishedHand) { return i == finishedHand; }) };
 			if (found != m_finishedHands.end()) continue;
 			
 			// print hand information
@@ -192,29 +186,15 @@ void Player::reset() {
 }
 
 bool Player::tryToMoveToNextHand() {
-	if (hasHandLeft()) {
-		moveToNextHand();
+	if (!m_handStack.empty()) {
 		std::cout << "Moving to next hand\n";
+		assert(!m_handStack.empty() && "Trying to pop from an empty stack");
+		m_currentHandIndex = m_handStack.top();
+		m_handStack.pop();
 		return true;
 	} else {
 		return false;
 	}
-}
-
-bool Player::hasHandLeft() const {
-	// check if there is hands left in the stack
-	if (!m_handStack.empty()) return true;
-	
-	// else check if current hand is finished
-	if (m_finishedHands.empty()) return true;
-	return m_finishedHands[m_finishedHands.size() - 1] != m_currentHandIndex;
-}
-
-void Player::moveToNextHand() {
-	assert(!m_handStack.empty() && "Trying to pop from an empty stack");
-	
-	m_currentHandIndex = m_handStack.top();
-	m_handStack.pop();
 }
 
 void Player::payAndDisplayResults(const int houseValue, const bool houseHasBlackJack, const bool houseBust) {

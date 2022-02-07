@@ -1,6 +1,6 @@
 #include "card.h"
 
-#include <cassert>      // for assert
+#include <cassert>
 #include <iostream>
 
 Card::Card(CardRank rank, CardSuit suit) : m_rank{rank}, m_suit{suit}
