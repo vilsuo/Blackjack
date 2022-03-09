@@ -4,7 +4,8 @@
 /**
 	contains rules of the game
 */
-namespace settings {
+namespace settings
+{
 	extern const int nInitialDecks;
 	
 	extern const int blackjackValue;

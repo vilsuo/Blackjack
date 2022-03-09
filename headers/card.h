@@ -3,7 +3,8 @@
 
 #include <iostream>
 
-enum class CardRank {
+enum class CardRank
+{
     rank_2,
     rank_3,
     rank_4,
@@ -21,7 +22,8 @@ enum class CardRank {
     max_ranks,
 };
 
-enum class CardSuit {
+enum class CardSuit
+{
     suit_clubs,
     suit_diamonds,
     suit_hearts,
@@ -30,19 +32,34 @@ enum class CardSuit {
     max_suits,
 };
 
-class Card {
-    private:
-        CardRank m_rank{};
-        CardSuit m_suit{};
-
-    public:
-        Card(CardRank rank, CardSuit suit);
+class Card
+{
+private:
+	CardRank m_rank{};
+	CardSuit m_suit{};
+	
+public:
+	explicit Card(CardRank rank, CardSuit suit);
 		
-		friend std::ostream& operator<< (std::ostream&, const Card&);
+	/*
+	// copy constructor
+	Card(const Card&) = delete;
+	
+	// move constructor
+	Card(Card&&); noexcept = default;
+	
+	// copy assignment
+	Card& operator= (const Card&) = delete
+	
+	// move assignment
+	Card& operator= (Card&&) noexcept = default;
+	*/
 		
-        int getCardValue() const;
-        bool isSameRank(const Card& card) const { return m_rank == card.m_rank; };
-        bool isSameValue(const Card& card) const { return getCardValue() == card.getCardValue(); };
+	friend std::ostream& operator<< (std::ostream&, const Card&);
+	
+	int getCardValue() const;
+	bool isSameRank(const Card& card) const { return m_rank == card.m_rank; };
+	bool isSameValue(const Card& card) const { return getCardValue() == card.getCardValue(); };
 };
 
 #endif

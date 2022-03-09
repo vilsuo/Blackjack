@@ -1,6 +1,7 @@
 #include "settings.h"
 
-namespace settings {
+namespace settings
+{
 	extern const int nInitialDecks{4};
 	
 	extern const int blackjackValue{21};

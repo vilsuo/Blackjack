@@ -11,20 +11,20 @@
 #include <string>
 #include <vector>
 
-Game::Game() {
-	m_players.emplace_back("ville", 200);
-	m_players.emplace_back("antti", 200);
-	m_players.emplace_back("mikko", 200);
-	m_players.emplace_back("jukka", 200);
-	m_players.emplace_back("sari", 200);
+Game::Game()
+{
+	
 }
 
-void Game::run() {
+void Game::run()
+{
     int option{};
     bool exit{false};
-    while (true) {
-        while (true) {
-			auto nPlayers{ m_players.size() };
+    while (true)
+	{
+        while (true)
+		{
+			auto nPlayers{m_players.size()};
 			
 			std::cout 				<< "\nGame menu\n";
             if (nPlayers) std::cout << "0 - Play Black Jack\n";
@@ -37,134 +37,129 @@ void Game::run() {
             std::cout 				<< "Enter your selection: ";
 
             std::cin >> option;
-            switch (option) {
-            case 0:
-				if (!nPlayers) {
-					std::cout << "\nUnknown command\n";
+            switch (option)
+			{
+				case 0:
+					if (!nPlayers)
+					{
+						std::cout << "\nUnknown command\n";
+						break;
+					}
+					std::cout << "\nEntering the game\n";
+					Game::play();
+					std::cout << "Exiting to game menu\n";
 					break;
-				}
-                Game::play();
-                break;
 
-            case 1:
-                Game::createNewPlayer();
-                break;
+				case 1:
+					createNewPlayer();
+					break;
 
-            case 2:
-				if (!nPlayers) {
-					std::cout << "\nUnknown command\n";
+				case 2:
+					if (!nPlayers)
+					{
+						std::cout << "\nUnknown command\n";
+						break;
+					}
+					deletePlayer();
 					break;
-				}
-                Game::deletePlayer();
-                break;
 
-            case 3:
-				if (!nPlayers) {
-					std::cout << "\nUnknown command\n";
+				case 3:
+					if (!nPlayers)
+					{
+						std::cout << "\nUnknown command\n";
+						break;
+					}
+					printPlayers();
 					break;
-				}
-                Game::printPlayers();
-                break;
-            
-            case 4:
-				if (!nPlayers) {
-					std::cout << "\nUnknown command\n";
-					break;
-				}
-                Game::addBalance();
-                break;
 				
-			case 5:
-				Game::showSettings();
-				break;
+				case 4:
+					if (!nPlayers)
+					{
+						std::cout << "\nUnknown command\n";
+						break;
+					}
+					addBalance();
+					break;
+					
+				case 5:
+					showSettings();
+					break;
 
-            case 6:
-                exit = true;
-                std::cout << "\nGood Bye!\n";
-                break;
+				case 6:
+					exit = true;
+					std::cout << "\nGood Bye!\n";
+					break;
 
-            default:
-                std::cout << "\nUnknown command\n";
-                break;
+				default:
+					std::cout << "\nUnknown command\n";
+					break;
             }
-            if (exit) break;
+            if (exit)
+				break;
         }
-        if (exit) break;
+        if (exit)
+			break;
     }
 }
 
-void Game::play() {			
-	std::cout << "\nEntering the game\n";
-	
-	Game::askBets();
+void Game::play()
+{
+	askBets();
 
-	Game::dealInitialRound();
+	dealInitialRound();
     
-	Game::dealFinalRound();
+	handleFinalPlayerRound();
 	
 	std::cout << "\nAll players have played, now it is houses turn to take cards\n";
 	
-	// house hits if until total value is less than settings::houseHitIfLessThan	
-	while (m_house.getDeckTotalValue() < settings::houseHitIfLessThan) {
-		m_house.addCard( Game::deckPopLastCard() );
-	}
+	dealFinalHouseRound();
 	
-	int houseValue{ m_house.getDeckTotalValue() };
-	std::cout << "\nHouse has the cards " << m_house << " with a total value of " << m_house.getDeckTotalValue() << '\n';
+	payAndDisplayResults();
 	
-	const bool houseHasBlackJack{ m_house.isBlackjack() };
-	const bool houseBust{ m_house.getDeckTotalValue() > settings::blackjackValue };
-	if (houseHasBlackJack) 	std::cout << "House has blackjack!\n";
-	if (houseBust) 			std::cout << "House busts!\n";
-	
-    // display results & pay to player if needed
-	std::cout << "\nResults for the players:\n";
-	for (auto& player : m_players) {
-		// iterate through player's finished hands
-		player.payAndDisplayResults(houseValue, houseHasBlackJack, houseBust);
-	}
-	
-	Game::reset();
-	
-    std::cout << "Exiting to game menu\n";
+	reset();
 }
 
-void Game::askBets() {
-	for (auto& player : m_players) {
+void Game::askBets()
+{
+	for (auto& player : m_players)
+	{
 		std::cout << "\nCurrent player:\n";
 		player.printInfo();
 		
 		int betAmount{};
-		const int balance{ player.getBalance() };
-		while (true) {
+		const int balance{player.getBalance()};
+		while (true)
+		{
 			std::cout << "How much do you want to bet? ";
 			std::cin >> betAmount;
-			if (betAmount > 0 && betAmount <= balance) {
+			if (betAmount > 0 && betAmount <= balance)
+			{
 				player.setCurrentBet(betAmount);
 				player.setBalance(balance - betAmount);
 				break;
-			} else {
+			} else
 				std::cout << "Bet not accepted, try again\n";
-			}
 		}
 	}
 }
 
-void Game::dealInitialRound() {
+void Game::dealInitialRound()
+{
 	// initial round: deal 1 card for house and two cards for each player
 	constexpr int nInitialCards{2};
-	m_house.addCard( Game::deckPopLastCard() );
-	for (auto& player : m_players) {
-		for (int nCards{0}; nCards < nInitialCards; ++nCards) {
-			player.addCardToCurrentHand( Game::deckPopLastCard() );
-		}
-		
+	m_house.addCard(deckPopLastCard());
+	for (auto& player : m_players)
+	{
+		for (int nCards{0}; nCards < nInitialCards; ++nCards)
+			player.addCardToCurrentHand(deckPopLastCard());
 	}
 }
 
-void Game::dealFinalRound() {
+void Game::handleFinalPlayerRound()
+{
 	std::vector<Player>::size_type iPlayer{0};
-	for (auto& player : m_players) {
+	for (auto& player : m_players)
+	{
 		++iPlayer;
 		bool isInitialAction = true; // reset for each player
 		
@@ -172,45 +167,52 @@ void Game::dealFinalRound() {
 		std::cout << "\nHouse has the card " << m_house << " with a value of " << m_house.getDeckTotalValue() << '\n';
 		
 		// ask actions until player has no turns left
-		while (true) {
+		while (true)
+		{
 			std::cout << "\nCurrent player:\n";
 			player.printInfo();
 			player.printHands();
 			
 			// check if player is already finished (bust or blackjack) after the initial deal
-			if (isInitialAction) {
-				if ( player.autoStandCurrentHand() ) {
+			if (isInitialAction)
+			{
+				if (player.isCurrentHandStandRequired())
+				{
 					player.standCurrentHand();
-					if (iPlayer < m_players.size() ) std::cout << "\nMoving to next player\n";
+					if (iPlayer < m_players.size())
+						std::cout << "\nMoving to next player\n";
+					
 					break;	// player only has one hand at this time
 				}
 			}
 			
-			int action{ askAction(player, isInitialAction) };
+			int action{askAction(player, isInitialAction)};
+			bool playerHasTurnsLeft{handleAction(player, action)}; 	// action is validated so this is okay
+			isInitialAction = false; 								// player has made an action
 			
-			// action is validated so this is okay
-			bool playerHasTurnsLeft{ handleAction(player, action) };
-			
-			isInitialAction = false; // player has made an action
-			
-			if (!playerHasTurnsLeft) {
+			if (!playerHasTurnsLeft)
+			{
 				std::cout << "\nCurrent player:\n";
 				player.printInfo();
 				player.printHands();
-				if (iPlayer < m_players.size() ) std::cout << "\nMoving to next player\n";
+				if (iPlayer < m_players.size())
+					std::cout << "\nMoving to next player\n";
+				
 				break;
 			}
 		}
 	}
 }
 
-int Game::askAction(const Player& player, const bool isInitialAction) const {
-	bool canSurrender{ settings::canSurrender && isInitialAction };
-	bool canDoubleDown{ player.canDoubleDownCurrentHand() };
-	bool canSplit{ player.canSplitCurrentHand() };
+int Game::askAction(const Player& player, const bool isInitialAction) const
+{
+	bool canSurrender{settings::canSurrender && isInitialAction};
+	bool canDoubleDown{player.canDoubleDownCurrentHand()};
+	bool canSplit{player.canSplitCurrentHand()};
 	
 	int playerAction{};
-	while (true) {
+	while (true)
+	{
 		// only show options that are allowed at the time
 		std::cout << "\nAllowed actions:\n";
 		std::cout << "0 - stand\n";
@@ -232,8 +234,10 @@ int Game::askAction(const Player& player, const bool isInitialAction) const {
 	return playerAction;
 }
 
-bool Game::handleAction(Player& player, int action) {
-	switch (action) {
+bool Game::handleAction(Player& player, int action)
+{
+	switch (action)
+	{
 		case 0: // stand
 			std::cout << "Standing\n";
 			player.standCurrentHand();
@@ -241,9 +245,9 @@ bool Game::handleAction(Player& player, int action) {
 			
 		case 1: // hit
 			std::cout << "Hitting\n";
-			player.addCardToCurrentHand( Game::deckPopLastCard() );
-			
-			if ( player.autoStandCurrentHand() ) {
+			player.addCardToCurrentHand(deckPopLastCard());
+			if (player.isCurrentHandStandRequired())
+			{
 				player.standCurrentHand();
 				return player.tryToMoveToNextHand();
 			}
@@ -254,11 +258,12 @@ bool Game::handleAction(Player& player, int action) {
 			return false; // only allowed as an initial action, ends players turn
 			
 		case 3: // double down
-			return player.doubleDownCurrentHand( Game::deckPopLastCard() );
+			return player.doubleDownCurrentHand(deckPopLastCard());
 		
-		case 4: { // split
-			const Card firstCard = Game::deckPopLastCard();
-			const Card secondCard = Game::deckPopLastCard();
+		case 4: // split
+		{
+			const Card firstCard{deckPopLastCard()};
+			const Card secondCard{deckPopLastCard()};
 			return player.splitCurrentHand(firstCard, secondCard);
 		}
 		
@@ -268,27 +273,57 @@ bool Game::handleAction(Player& player, int action) {
 	}
 }
 
-Card Game::deckPopLastCard() {
-	if ( m_deck.getNumberOfCardsInADeck() == 0) {
+Card Game::deckPopLastCard()
+{
+	if (m_deck.getNumberOfCardsInADeck() == 0)
 		m_deck = Deck(settings::nInitialDecks);
-	}
+	
 	return m_deck.popLastCard();
 }
 
-void Game::reset() {
-	for (auto& player : m_players) player.reset();
+void Game::dealFinalHouseRound()
+{
+	while (m_house.getDeckTotalValue() < settings::houseHitIfLessThan)
+		m_house.addCard(deckPopLastCard());
+}
+
+void Game::payAndDisplayResults()
+{
+	const int houseValue{m_house.getDeckTotalValue()};
+	const bool houseHasBlackJack{m_house.isBlackjack()};
+	const bool houseBust{m_house.getDeckTotalValue() > settings::blackjackValue};
+	
+	std::cout << "\nHouse has the cards " << m_house << " with a total value of " << houseValue << '\n';
+	if (houseHasBlackJack)
+		std::cout << "House has blackjack!\n";
+	if (houseBust)
+		std::cout << "House busts!\n";
+	
+	std::cout << "\nResults for the players:\n";
+	for (auto& player : m_players)
+		player.payAndDisplayResults(houseValue, houseHasBlackJack, houseBust);
+}
+
+void Game::reset()
+{
+	for (auto& player : m_players)
+		player.reset();
+	
 	m_house.removeAllCards();
 }
 
-std::vector<Player>::iterator Game::findPlayer(int id) {
+std::vector<Player>::iterator Game::findPlayer(int id)
+{
     return std::find_if(std::begin(m_players), std::end(m_players),
-        [id](const auto& player) {
+        [id](const auto& player)
+		{
             return player.getId() == id;
         }
     );
 }
 
-void Game::createNewPlayer() {
+void Game::createNewPlayer()
+{
 	std::cout << "\nPlayer creation:\n";
     std::cout << "Enter a name for the new player: ";
 	std::string name{};
@@ -302,55 +337,62 @@ void Game::createNewPlayer() {
     std::cout << "Player added\n";
 }
 
-void Game::deletePlayer() {
-	Game::printPlayers();
+void Game::deletePlayer()
+{
+	printPlayers();
 	std::cout << "\nPlayer deletion:\n";
 	std::cout << "Enter id of the player to delete ";
 	int id{};
 	std::cin >> id;
 
-	auto player{ Game::findPlayer(id) };
-	if (player != std::end(m_players) ) {
+	auto player{findPlayer(id)};
+	if (player != std::end(m_players))
+	{
 		m_players.erase(player);
 		std::cout << "Player deleted\n";
-	} else {
+	} else
 		std::cout << "Player not found\n";
-	}
 }
 
-void Game::printPlayers() const {
+void Game::printPlayers() const
+{
 	std::cout << "\nPlayers:\n";
-	for (const auto& player : m_players) player.printInfo();
+	for (const auto& player : m_players)
+		player.printInfo();
 }
 
-void Game::addBalance() {
-	Game::printPlayers();
+void Game::addBalance()
+{
+	printPlayers();
 	std::cout << "\nAdd balance:\n";
 	std::cout << "Enter id of the player to add balance to: ";
 	int id{};
 	std::cin >> id;
 
-	auto player{ Game::findPlayer(id) };
-	if (player != std::end(m_players) ) {
+	auto player{findPlayer(id)};
+	if (player != std::end(m_players))
+	{
 		int balance{};
 		std::cout << "Enter amount to add to balance: ";
 		std::cin >> balance;
 
 		player->setBalance(player->getBalance() + balance);
 		std::cout << "Balance added\n";
-	} else {
+	} else
 		std::cout << "Player not found\n";
-	}
 }
 
-void Game::showSettings() const {
+void Game::showSettings() const
+{
 	std::cout << "\nSettings:\n";
-	std::cout << "Number of decks being used is " 						<< settings::nInitialDecks 			<< '\n';
-	std::cout << "Blackjack value is " 									<< settings::blackjackValue 		<< '\n';
-	std::cout << "House hits if the total value of cards is less than " << settings::houseHitIfLessThan 	<< '\n';
-	std::cout << "Splitting on the same card rank is " 	<< (settings::splitOnSameRank ? "" : "not ") << "allowed\n";
-	std::cout << "Surrendering is " 					<< (settings::canSurrender ? "" : "not ") << "allowed\n";
-	std::cout << "You can "								<< (settings::canDoubleDownAfterASplit ? "" : "not ")
-														<< "double down after splitting\n";
-	std::cout << "In one round you can split " 			<< settings::maxSplits << " times\n";
+	std::cout << "Number of decks being used is " 						<< settings::nInitialDecks 		<< '\n';
+	std::cout << "Blackjack value is " 									<< settings::blackjackValue 	<< '\n';
+	std::cout << "House hits if the total value of cards is less than " << settings::houseHitIfLessThan << '\n';
+	std::cout << "Splitting on the same card rank is " 					<< (settings::splitOnSameRank ? "" : "not ")
+																		<< "allowed\n";
+	std::cout << "Surrendering is " 									<< (settings::canSurrender ? "" : "not ")
+																		<< "allowed\n";
+	std::cout << "You can "												<< (settings::canDoubleDownAfterASplit ? "" : "not ")
+																		<< "double down after splitting\n";
+	std::cout << "In one round you can split "							<< settings::maxSplits 			<< " times\n";
 }
